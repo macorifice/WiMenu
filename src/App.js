@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
-import CameraIcon from '@material-ui/icons/PhotoCamera';
+// import CameraIcon from '@material-ui/icons/PhotoCamera';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -14,6 +14,19 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import logo from './assets/logo.png'
+// import UploadMenu from './components/UploadMenu'
+import DatePicker from './components/DatePicker'
+import { FilePond, registerPlugin } from 'react-filepond';
+// Import FilePond styles
+import 'filepond/dist/filepond.min.css';
+
+// Import the Image EXIF Orientation and Image Preview plugins
+// Note: These need to be installed separately
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+// Register the plugins
+registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
 
 function Copyright() {
   return (
@@ -60,10 +73,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const cards = [];
+const cards = [1];
 
 export default function Album() {
   const classes = useStyles();
+  const [upload, setUpload] = useState(false)
+  const [menuUrls, setMenuUrls] = useState([])
+
+  const UploadMenuHandler = () => {
+    setUpload(true)
+  }
+
+  const CloseUpload = () => {
+    setUpload(false)
+  }
+
+
+  const [files, setFiles] = useState()
 
   return (
     <React.Fragment>
@@ -89,10 +115,91 @@ export default function Album() {
             <Typography variant="h5" align="center" color="textSecondary" paragraph>
             Rendilo facilmente accessibile alla tua clientela nel rispetto delle normative anti Covid-19
             </Typography>
+            {upload &&
+            <div className={classes.heroButtons}>
+            {/* <Grid container spacing={2} justify="center"> */}
+              {/* <UploadMenu></UploadMenu> */}
+              <FilePond
+                  server={{
+                    process: (
+                      fieldName,
+                      file,
+                      metadata,
+                      load,
+                      error,
+                      progress,
+                      abort
+                    ) => {
+                      // fieldName is the name of the input field
+                      // file is the actual file object to send
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("upload_preset", "ml_default");
+                      
+                      const request = new XMLHttpRequest();
+                      request.open(
+                        "POST",
+                        "https://api.cloudinary.com/v1_1/day71xeyp/upload"
+                      );
+
+                      // Should call the progress method to update the progress to 100% before calling load
+                      // Setting computable to false switches the loading indicator to infinite mode
+                      request.upload.onprogress = (e) => {
+                        progress(e.lengthComputable, e.loaded, e.total);
+                      };
+
+                      // Should call the load method when done and pass the returned server file id
+                      // this server file id is then used later on when reverting or restoring a file
+                      // so your server knows which file to return without exposing that info to the client
+                      request.onload = function () {
+                        if (request.status >= 200 && request.status < 300) {
+                          // the load method accepts either a string (id) or an object
+                          load(request.responseText);
+                          setMenuUrls(JSON.parse(request.responseText))
+                          setTimeout(() => {
+                            setUpload(false)  
+                          }, 3000);
+                          
+                        } else {
+                          // Can call the error method if something is wrong, should exit after
+                          error("oh no");
+                        }
+                      };
+
+                      request.send(formData);
+
+                      // Should expose an abort method so the request can be cancelled
+                      return {
+                        abort: () => {
+                          // This function is entered if the user has tapped the cancel button
+                          request.abort();
+
+                          // Let FilePond know the request has been cancelled
+                          abort();
+                        },
+                      };
+                    },
+                  }}
+                  files={files}
+                  onupdatefiles={setFiles}
+                  labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+                />
+               <Grid container spacing={2} justify="center">
+               <DatePicker></DatePicker>                   
+              </Grid>
+              <Grid container spacing={2} justify="center">
+                  <Button onClick={CloseUpload} variant="contained" color="primary">
+                    Annulla
+                  </Button>
+              </Grid>
+            {/* </Grid> */}
+          </div>
+            }
+            {!upload &&
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Button variant="contained" color="primary">
+                  <Button onClick={UploadMenuHandler} variant="contained" color="primary">
                     Upload menù
                   </Button>
                 </Grid>
@@ -103,6 +210,7 @@ export default function Album() {
                 </Grid>
               </Grid>
             </div>
+            }
           </Container>
         </div>
         <Container className={classes.cardGrid} maxWidth="md">
@@ -120,24 +228,24 @@ export default function Album() {
                 <Card className={classes.card}>
                   <CardMedia
                     className={classes.cardMedia}
-                    image="https://source.unsplash.com/random"
+                    image="http://res.cloudinary.com/day71xeyp/image/upload/v1591610825/twitter_profile_image_hl0rot.png"
                     title="Image title"
                   />
                   <CardContent className={classes.cardContent}>
                     <Typography gutterBottom variant="h5" component="h2">
-                      Heading
+                    twitter_profile_image
                     </Typography>
                     <Typography>
-                      This is a media card. You can use this section to describe the content.
+                      Questo è il tuo menù numero 1°, con validità dal 01-03-2020 al 30-06-2020
                     </Typography>
                   </CardContent>
                   <CardActions>
                     <Button size="small" color="primary">
                       View
                     </Button>
-                    <Button size="small" color="primary">
+                    {/* <Button size="small" color="primary">
                       Edit
-                    </Button>
+                    </Button> */}
                   </CardActions>
                 </Card>
               </Grid>
