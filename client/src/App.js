@@ -136,16 +136,12 @@ export default function Album() {
                 <Typography gutterBottom variant="h5" component="h2">
                 {menu.name}
                 </Typography>
-                <Typography>
-                  This is a media card. You can use this section to describe the content.
-                </Typography>
-              { menu.description ? 
+                { menu.description ? 
               <Typography variant="body2" color="textPrimary" component="p">
               {menu.description} 
               </Typography>
               : null }
-                  
-                  
+              
               { menu.from ? 
               <Typography variant="body2" color="textSecondary" component="p">
               Valido dal {moment().format(menu.from,  "DD MM YYYY hh:mm:ss", true)} 
@@ -274,7 +270,7 @@ export default function Album() {
               Personalizza il tuo menù
             </Typography>
             <Typography
-              variant="h5"
+              variant="h6"
               align="center"
               color="textSecondary"
               paragraph
