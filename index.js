@@ -5,7 +5,7 @@ require('./models/Menu');
 const app = express();
 
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI || `mongodb://admin_wimenu:3w4aSq7cg2j_xC5@ds151228.mlab.com:51228/heroku_4brl6sl6`);
+mongoose.connect(`mongodb://admin_wimenu:3w4aSq7cg2j_xC5@ds151228.mlab.com:51228/heroku_4brl6sl6`);
 
 app.use(bodyParser.json());
 
@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'production') {
   
   }
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`app running on port ${PORT}`)
 });

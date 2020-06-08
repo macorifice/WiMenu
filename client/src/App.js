@@ -19,8 +19,8 @@ import DatePicker from "./components/DatePicker";
 import { FilePond, registerPlugin } from "react-filepond";
 // Import FilePond styles
 import "filepond/dist/filepond.min.css";
-import menuService from './services/menuService';
-
+import menuService from "./services/menuService";
+import TextField from "@material-ui/core/TextField";
 // Import the Image EXIF Orientation and Image Preview plugins
 // Note: These need to be installed separately
 import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
@@ -29,6 +29,9 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { motion } from "framer-motion";
 import PDFPreview from "./components/PDFPreview";
 import CreateMenu from "./components/CreateMenu";
+import moment from 'moment'
+import Paper from '@material-ui/core/Paper';
+
 
 // Register the plugins
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
@@ -76,35 +79,98 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(6),
   },
+  container: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    marginBottom: theme.spacing(3),
+    width: 200,
+  },
 }));
 
 export default function Album() {
-
   const [menus, setmenus] = useState(null);
+  const [menuname, setmenuname] = useState("");
+  const [menudescription, setmenudescription] = useState("");
+  const [validFrom, setvalidfrom] = useState('2017-05-24T10:30')
+  const [validTo, setvalidto] = useState('2017-05-24T10:30')
+  const [upload, setUpload] = useState(false);
 
   useEffect(() => {
-    if(!menus) {
+    const fetchData = async () => {
       getMenus();
-    }
-  })
+    };
+ 
+    fetchData();
+  }, [upload]);
+
 
   const getMenus = async () => {
     let res = await menuService.getAll();
     console.log(res);
     setmenus(res);
-  }
+  };
 
-  const renderMenu = menu => {
+  const renderMenu = (menu) => {
     return (
-      <li key={menu._id} className="list__item menu">
-        <h3 className="menu__name">{menu.name}</h3>
-        <p className="menu__description">{menu.description}</p>
-      </li>
+      <Container className={classes.cardGrid} maxWidth="md">
+      <Grid container spacing={4}>
+          <Grid item key={menu} xs={12} sm={6} md={4}>
+          <motion.div
+            animate={{
+              scale: [1, 2, 2, 1, 1],
+              rotate: [0, 0, 270, 270, 0],
+              borderRadius: ["20%", "20%", "50%", "50%", "20%"],
+            }}
+          >
+            <Card  key={menu._id} className={classes.card}>
+              <CardMedia
+                className={classes.cardMedia}
+                image={menu.pdf}
+                title={menu.name}
+              />
+              <CardContent className={classes.cardContent}>
+                <Typography gutterBottom variant="h5" component="h2">
+                {menu.name}
+                </Typography>
+                <Typography>
+                  This is a media card. You can use this section to describe the content.
+                </Typography>
+              { menu.description ? 
+              <Typography variant="body2" color="textPrimary" component="p">
+              {menu.description} 
+              </Typography>
+              : null }
+                  
+                  
+              { menu.from ? 
+              <Typography variant="body2" color="textSecondary" component="p">
+              Valido dal {moment().format(menu.from,  "DD MM YYYY hh:mm:ss", true)} 
+              </Typography>
+              : null }
+                    
+                  
+            { menu.to ? 
+            <Typography variant="body2" color="textSecondary" component="p">
+            Valido al ' {moment().format(menu.to,  "DD MM YYYY hh:mm:ss", true)} 
+            </Typography>
+            : null }
+              </CardContent>
+
+            </Card>
+          </motion.div>
+          </Grid>
+        {/* ))} */}
+      </Grid>
+    </Container>
     );
   };
 
   const classes = useStyles();
-  const [upload, setUpload] = useState(false);
+  
   const [cards, setCards] = useState([]);
   const [menuUrls, setMenuUrls] = useState([]);
   const [create, setCreate] = useState(false);
@@ -117,12 +183,46 @@ export default function Album() {
     setUpload(false);
   };
 
+  const SaveUpload = async () => {
+    try {
+      await menuService.saveNew(
+        {
+          "name": menuname,
+          "from": validFrom,
+          "to": validTo,
+          "description": menudescription,
+          "pdf": menuUrls.url
+        }
+      );
+      setUpload(false)
+    }
+    catch (e) {
+      console.log(e)
+    }
+  };
+
   const CloseCreate = () => {
     setCreate(false);
   };
 
   const CreateMenuHandler = () => {
     setCreate(true);
+  };
+
+  const onChangeMenuName = (e) => {
+    setmenuname(e.target.value);
+  };
+
+  const onChangeMenuDescription = (e) => {
+    setmenudescription(e.target.value);
+  };
+
+  const onChangeFrom = (e) => {
+    setvalidfrom(e.target.value);
+  };
+
+  const onChangeTo = (e) => {
+    setvalidto(e.target.value);
   };
 
   const [files, setFiles] = useState();
@@ -139,15 +239,7 @@ export default function Album() {
         </Toolbar>
       </AppBar>
       <main>
-      <div className="App">
-      <ul className="list">
-        {(menus && menus.length > 0) ? (
-          menus.map(menu => renderMenu(menu))
-        ) : (
-          <p>No products found</p>
-        )}
-      </ul>
-    </div>
+        <div className="App"></div>
         {/* Hero unit */}
         <div className={classes.heroContent}>
           <Container maxWidth="sm">
@@ -155,7 +247,7 @@ export default function Album() {
               animate={{
                 scale: [1, 2, 2, 1, 1],
                 rotate: [0, 0, 270, 270, 0],
-                borderRadius: ["20%", "20%", "50%", "50%", "20%"]
+                borderRadius: ["20%", "20%", "50%", "50%", "20%"],
               }}
             >
               <Typography
@@ -237,9 +329,6 @@ export default function Album() {
                             load(request.responseText);
                             setCards([1]);
                             setMenuUrls(JSON.parse([request.responseText]));
-                            setTimeout(() => {
-                              setUpload(false);
-                            }, 3000);
                           } else {
                             // Can call the error method if something is wrong, should exit after
                             error("oh no");
@@ -265,7 +354,48 @@ export default function Album() {
                     labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
                   />
                   <Grid container spacing={2} justify="center">
-                    <DatePicker></DatePicker>
+                    <TextField
+                      required
+                      placeholder={`Inserisci il nome del menù`}
+                      variant="outlined"
+                      fullWidth
+                      onChange={onChangeMenuName}
+                      style={{ margin: 15 }}
+                    />
+                    <TextField
+                      required
+                      placeholder={`Inserisci una breve descrizione del menù`}
+                      variant="outlined"
+                      fullWidth
+                      onChange={onChangeMenuDescription}
+                      style={{ margin: 15 }}
+                    />
+                  </Grid>
+                  <Grid container spacing={2} justify="center">
+                    <form className={classes.container} noValidate>
+                      <TextField
+                        id="datetime-from"
+                        onChange={onChangeFrom}
+                        label="Valido dal"
+                        type="datetime-local"
+                        defaultValue="2017-05-24T10:30"
+                        className={classes.textField}
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                      <TextField
+                        id="datetime-to"
+                        onChange={onChangeTo}
+                        label="Valido al"
+                        type="datetime-local"
+                        defaultValue="2017-05-24T10:30"
+                        className={classes.textField}
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    </form>
                   </Grid>
                   <Grid container spacing={2} justify="center">
                     <Button
@@ -274,6 +404,14 @@ export default function Album() {
                       color="primary"
                     >
                       Annulla
+                    </Button>
+                    <Button
+                      onClick={SaveUpload}
+                      variant="contained"
+                      color="primary"
+                      style={{marginLeft: 6}}
+                    >
+                      Salva
                     </Button>
                   </Grid>
                   {/* </Grid> */}
@@ -308,60 +446,26 @@ export default function Album() {
         </div>
         <Container className={classes.cardGrid} maxWidth="md">
           {/* End hero unit */}
-          <Grid container spacing={4}>
-            {cards.length === 0 && !create && (
-              <Grid
-                container
-                direction="row"
-                justify="center"
-                alignItems="center"
-                spacing={3}
-              >
-                <Typography gutterBottom variant="h5" component="h2">
-                  Al momento non hai menù disponibili{" "}
-                  <span role="img" aria-label="sad">
-                    😥
-                  </span>
-                </Typography>
-              </Grid>
-            )}
-            {cards.length > 0 &&
-              !create &&
-              cards.map((card) => (
-                <Grid item key={card} xs={12} sm={6} md={4}>
-                  <motion.div
-                    animate={{
-                      scale: [1, 2, 2, 1, 1],
-                      rotate: [0, 0, 270, 270, 0],
-                      borderRadius: ["20%", "20%", "50%", "50%", "20%"]
-                    }}
-                  >
-                  <Card className={classes.card}>
-                    <CardMedia
-                      className={classes.cardMedia}
-                      image={menuUrls.url}
-                      title="Image title"
-                    />
-                    <CardContent className={classes.cardContent}>
-                      <Typography gutterBottom variant="h5" component="h2">
-                        {menuUrls.original_filename}
-                      </Typography>
-                      <Typography>
-                        Questo è il tuo menù numero n°, con validità dal
-                        01-03-2020 al 30-06-2020
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      {/* <Button size="small" color="primary">
-                      View
-                    </Button> */}
-                    </CardActions>
-                  </Card>
-                  </motion.div>
-                  {/* <PDFPreview file={files}></PDFPreview> */}
-                </Grid>
-              ))}
-          </Grid>
+
+          {menus && menus.length > 0 && !create ? (
+            menus.map((menu) => renderMenu(menu))
+          ) : (
+            <Grid
+              container
+              direction="row"
+              justify="center"
+              alignItems="center"
+              spacing={3}
+            >
+              <Typography gutterBottom variant="h5" component="h2">
+                Al momento non hai menù disponibili{" "}
+                <span role="img" aria-label="sad">
+                  😥
+                </span>
+              </Typography>
+            </Grid>
+          )}
+
           {create && (
             <>
               <CreateMenu></CreateMenu>

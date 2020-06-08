@@ -1,47 +1,31 @@
 {
   "name": "wi-menu",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "****",
+  "main": "index.js",
   "dependencies": {
-    "@material-ui/core": "^4.10.1",
-    "@material-ui/icons": "^4.9.1",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "axios": "^0.19.2",
-    "filepond": "^4.15.1",
-    "filepond-plugin-file-validate-type": "^1.2.5",
-    "filepond-plugin-image-exif-orientation": "^1.0.9",
-    "filepond-plugin-image-preview": "^4.6.4",
-    "framer-motion": "^1.11.0",
-    "lodash": "^4.17.15",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-filepond": "^7.0.1",
-    "react-pdf": "^4.1.0",
-    "react-scripts": "3.4.1"
+    "body-parser": "^1.19.0",
+    "concurrently": "^5.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.18",
+    "nodemon": "^2.0.4"
   },
+  "devDependencies": {},
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "client": "npm run start --prefix client",
+    "server": "nodemon index.js",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "start": "node index.js"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macorifice/WiMenu.git"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/macorifice/WiMenu/issues"
   },
-  "proxy": "http://localhost:5000",
-  "devDependencies": {}
+  "homepage": "https://github.com/macorifice/WiMenu#readme"
 }
