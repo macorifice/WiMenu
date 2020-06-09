@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 require('./models/Menu');
+require('./models/User');
 const app = express();
 
 mongoose.Promise = global.Promise;
@@ -14,6 +15,7 @@ mongoose.connect(process.env.MONGODB_URI || `mongodb://admin_wimenu:3w4aSq7cg2j_
 app.use(bodyParser.json());
 
 require('./routes/menuRoutes')(app);
+require('./routes/userRoutes')(app);
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('client/build'));

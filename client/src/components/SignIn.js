@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -13,6 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import logo from "../assets/logo.png";
+import userService from "../services/userService";
 
 function Copyright() {
   return (
@@ -50,6 +51,33 @@ const useStyles = makeStyles((theme) => ({
 export default function SignIn() {
   const classes = useStyles();
 
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
+
+  const onChangeHandler = (e) => {
+    const { name, value } = e.target;
+    setUser({ ...user, [name]: value });
+  };
+
+  const signinHandler = async () => {
+    let check = await userService.checkEmail(user.email);
+    if (check.user) {
+      console.log(`utente c'è`)
+      let signin =  await userService.signin(user)
+      if (signin.checkUser) {
+        console.log(`login`)
+      }
+      else {
+        console.log(`utenze sbagliate!`)
+      }
+    }
+    else {
+    console.log(`utente non c'è`)
+    }
+  };
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -75,6 +103,7 @@ export default function SignIn() {
             name="email"
             autoComplete="email"
             autoFocus
+            onChange={onChangeHandler}
           />
           <TextField
             variant="outlined"
@@ -86,17 +115,18 @@ export default function SignIn() {
             type="password"
             id="password"
             autoComplete="current-password"
+            onChange={onChangeHandler}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
             label="Remember me"
           />
           <Button
-            type="submit"
             fullWidth
             variant="contained"
             color="primary"
             className={classes.submit}
+            onClick={signinHandler}
           >
             Sign In
           </Button>
