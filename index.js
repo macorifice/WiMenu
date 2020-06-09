@@ -12,13 +12,12 @@ app.use(bodyParser.json());
 require('./routes/menuRoutes')(app);
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('client/build'));
+    app.use(express.static(path.join(__dirname, 'public')));
   
     const path = require('path');
-    app.get('*', (req,res) => {
-        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'))
-    })
-  
+    app.get('*', function(req, res) {
+      res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    });
   }
 
 const PORT = 5000;
