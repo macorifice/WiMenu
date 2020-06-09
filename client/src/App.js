@@ -446,7 +446,9 @@ export default function Album() {
           {menus && menus.length > 0 && !create ? (
             menus.map((menu) => renderMenu(menu))
           ) : (
-            <Grid
+            <>
+          {!create &&
+              <Grid
               container
               direction="row"
               justify="center"
@@ -460,6 +462,8 @@ export default function Album() {
                 </span>
               </Typography>
             </Grid>
+          }
+          </>
           )}
 
           {create && (
